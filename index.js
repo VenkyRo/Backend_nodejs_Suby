@@ -9,6 +9,7 @@ const productRoutes = require('./routes/productRoutes');
 const cors = require('cors');
 const path = require('path');
 
+
 const app = express();
 
 const PORT = process.env.PORT|| 4000;
@@ -21,6 +22,8 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 app.use(bodyParser.json());
+
+app.use(cors());
 
 app.use('/vendor',vendorRoutes);
 app.use('/firm', firmRoutes)
