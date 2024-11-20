@@ -1,5 +1,5 @@
  
-//const Frim = require('../models/Firm');
+
 const Vendor = require('../models/Vendor');
 
 const multer = require("multer");
@@ -22,56 +22,48 @@ const upload = multer({storage:storage});
 
 
 
-const addFrim = async(req,res)=>{
- try {
+const addFirm = async (req, res) => {
+  try {
+    const { firmName, area, category, region, offer } = req.body;
 
-     const { firmName, area, category, region, offer } = req.body;
+    const image = req.file ? req.file.filename : undefined;
 
-     const image = req.file ? req.file.filename : undefined;
+    const vendor = await Vendor.findById(req.vendorId);
+    if (!vendor) {
+      res.status(404).json({ message: "Vendor not found" });
+    }
 
-     const vendor = await Vendor.findById(req.vendorId);
+    if (vendor.firm.length > 0) {
+      return res.status(400).json({ message: "vendor can have only one firm" });
+    }
 
-     if (!vendor) {
-       return res.status(401).json({ error: "vendor not Found!" });
-     }
-
-     if (vendor.firm.length > 0) {
-       return res
-         .status(400)
-         .json({ message: "vendor can have only one firm" });
-     }
-
-     const firm = new Firm({
-       firmName,
-       area,
-       category,
-       region,
-       offer,
-       image,
-       vendor: vendor._id
-     });
+    const firm = new Firm({
+      firmName,
+      area,
+      category,
+      region,
+      offer,
+      image,
+      vendor: vendor._id
+    });
 
     const savedFirm = await firm.save();
 
     const firmId = savedFirm._id;
+    const vendorFirmName = savedFirm.firmName;
 
     vendor.firm.push(savedFirm);
-    const vendorFirstName = savedFirm.firmName
-    vendor.firm.push(savedFirm)
 
     await vendor.save();
 
-    res.status(201).json({ message: "firm added  Successfully", firmId, vendorFirstName });
-    console.log("frim added",firmId);
-
-    
-    
- } catch (error) {
+    return res
+      .status(200)
+      .json({ message: "Firm Added successfully ", firmId, vendorFirmName });
+  } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error frim controller" });
-    
- }
-}
+    res.status(500).json("intenal server error");
+  }
+};
 
 const deleteFirmById = async (req, res) => {
   try {
@@ -88,4 +80,4 @@ const deleteFirmById = async (req, res) => {
   }
 };
 
-module.exports = {addFrim:[upload.single('image'),addFrim],deleteFirmById}
+module.exports = { addFrim: [upload.single("image"), addFirm], deleteFirmById };
